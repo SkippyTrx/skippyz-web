@@ -1,0 +1,21 @@
+body {
+  margin: 0;
+  font-family: "Montserrat", sans-serif;
+  background: radial-gradient(circle at center, #0b0c1e 0%, #000010 100%);
+  overflow: hidden;
+  color: white;
+}
+
+header {
+  margin-top: 3em;
+  text-align: center;
+  color: white;
+}
+
+#container3D canvas {
+  width: 100vw !important;
+  height: 100vh !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
