@@ -196,6 +196,13 @@ window.addEventListener("keydown", (event) => {
   }
 });
 
+// Mobile tap 
+renderer.domElement.addEventListener("touchstart", (e) => {
+  e.preventDefault(); // prevents scrolling
+  paused = !paused;
+  console.log("Paused:", paused);
+});
+
 // Camera
 camera.position.set(0,10,35);
 
@@ -275,6 +282,7 @@ function animate(){
   controls.update();
   composer.render();
 }
+
 
 
 
