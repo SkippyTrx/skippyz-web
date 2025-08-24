@@ -62,22 +62,33 @@ outlinePass.renderToScreen = true;
 composer.addPass(outlinePass);
 
 // Load GLTF
-let model, bonnet, bonnetPivot, boot, bootPivot;
+let model, bonnet, bonnetPivot, boot, bootPivot, rearWheelLeft, rearWheelRight, frontWheelLeft, frontWheelRight, exhaustTips;
 let bonnetOpen = false;
 let bootOpen = false;
 
 let doorLeft, doorLeftPivot, doorLeftOpen = false;
 let doorRight, doorRightPivot, doorRightOpen = false;
+// Detect mobile device
+const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)|| window.innerWidth <= 768;
 
+//LOADER
 const loader = new GLTFLoader();
 loader.load("./models/myModel.glb", (gltf) => {
   model = gltf.scene;
   model.scale.set(2,2,2);
   scene.add(model);
 
+  // --- EXHAUST ---
+  exhaustTips = model.getObjectByName("ExhaustTips");
+
+  // --- WHEEELS ---
+  rearWheelLeft = model.getObjectByName("RearWheelLeft");
+  rearWheelRight = model.getObjectByName("RearWheelRight");
+  frontWheelLeft = model.getObjectByName("FrontWheelLeft");
+  frontWheelRight = model.getObjectByName("FrontWheelRight");
+
   // --- BONNET ---
   bonnet = model.getObjectByName("Bonnet");
-  if (!bonnet) console.error("Bonnet not found!");
 
   bonnetPivot = new THREE.Object3D();
   model.add(bonnetPivot);
@@ -92,7 +103,6 @@ loader.load("./models/myModel.glb", (gltf) => {
 
   // --- BOOT ---
   boot = model.getObjectByName("Boot");
-  if (!boot) console.error("Boot not found!");
 
   bootPivot = new THREE.Object3D();
   model.add(bootPivot);
@@ -107,7 +117,6 @@ loader.load("./models/myModel.glb", (gltf) => {
 
   // --- DOOR LEFT ---
   doorLeft = model.getObjectByName("DoorLeft");
-  if (!doorLeft) console.error("DoorLeft not found!");
 
   doorLeftPivot = new THREE.Object3D();
   model.add(doorLeftPivot);
@@ -123,7 +132,6 @@ loader.load("./models/myModel.glb", (gltf) => {
 
   // --- DOOR RIGHT ---
   doorRight = model.getObjectByName("DoorRight");
-  if (!doorRight) console.error("DoorRight not found!");
 
   doorRightPivot = new THREE.Object3D();
   model.add(doorRightPivot);
@@ -138,6 +146,7 @@ loader.load("./models/myModel.glb", (gltf) => {
 
   animate();
 }, undefined, (err)=>console.error(err));
+//LOADER END
 
 // Mouse hover detection
 window.addEventListener("mousemove", (event)=>{
@@ -152,43 +161,105 @@ window.addEventListener("mousemove", (event)=>{
   if(intersects.length === 0 && doorLeft) intersects = raycaster.intersectObject(doorLeft, true);
   if(intersects.length === 0 && doorRight) intersects = raycaster.intersectObject(doorRight, true);
 
-  outlinePass.selectedObjects = intersects.length > 0 ? [intersects[0].object] : [];
+  if(intersects.length > 0){
+    // Find top-level parent object (bonnet, boot, doorLeft, doorRight)
+    let topObject = intersects[0].object;
+    while(topObject.parent && topObject.parent !== model){
+      topObject = topObject.parent;
+    }
+    outlinePass.selectedObjects = [topObject];
+  } else {
+    outlinePass.selectedObjects = [];
+  }
+
   document.body.style.cursor = intersects.length > 0 ? "pointer" : "default";
 });
 
-window.addEventListener("click", () => {
-  raycaster.setFromCamera(mouse, camera);
+//FOR PC 
+if(!isMobile){
+  window.addEventListener("click", () => {
+    raycaster.setFromCamera(mouse, camera);
 
-  let intersects = [];
-  if (bonnet) intersects = raycaster.intersectObject(bonnet, true);
-  if (intersects.length > 0 && bonnetPivot) {
+    let intersects = [];
+    if (bonnet) intersects = raycaster.intersectObject(bonnet, true);
+    if (intersects.length > 0 && bonnetPivot) {
+      bonnetOpen = !bonnetOpen;
+      return;
+    }
+
+    if (boot) intersects = raycaster.intersectObject(boot, true);
+    if (intersects.length > 0 && bootPivot) {
+      bootOpen = !bootOpen;
+      return;
+    }
+
+    if (doorLeft) intersects = raycaster.intersectObject(doorLeft, true);
+    if (intersects.length > 0 && doorLeftPivot) {
+      doorLeftOpen = !doorLeftOpen;
+      return;
+    }
+
+    if (doorRight) intersects = raycaster.intersectObject(doorRight, true);
+    if (intersects.length > 0 && doorRightPivot) {
+      doorRightOpen = !doorRightOpen;
+      return;
+    }
+
+    // If no part is clicked, toggle paused
+      if (intersects.length === 0) {
+        paused = !paused;
+      }
+  });
+}
+
+//FOR MOBILE 
+
+if (isMobile) {
+
+  // Create a container for buttons
+  const btnContainer = document.createElement("div");
+  btnContainer.style.position = "absolute";
+  btnContainer.style.bottom = "20px";
+  btnContainer.style.left = "50%";
+  btnContainer.style.transform = "translateX(-50%)";
+  btnContainer.style.display = "flex";
+  btnContainer.style.gap = "10px";
+  btnContainer.style.zIndex = "100";
+  document.body.appendChild(btnContainer);
+
+  // Helper to make a button
+  function makeButton(label, onClick) {
+    const btn = document.createElement("button");
+    btn.innerText = label;
+    btn.style.padding = "20px 25px";
+    btn.style.fontSize = "14px";
+    btn.style.borderRadius = "8px";
+    btn.style.border = "none";
+    btn.style.background = "#333";
+    btn.style.color = "#fff";
+    btn.style.cursor = "pointer";
+    btn.addEventListener("click", onClick);
+    btnContainer.appendChild(btn);
+  }
+
+  // Buttons for car parts
+  makeButton("Toggle Bonnet", () => {
     bonnetOpen = !bonnetOpen;
-    return;
-  }
+  });
 
-  if (boot) intersects = raycaster.intersectObject(boot, true);
-  if (intersects.length > 0 && bootPivot) {
+  makeButton("Toggle Boot", () => {
     bootOpen = !bootOpen;
-    return;
-  }
+  });
 
-  if (doorLeft) intersects = raycaster.intersectObject(doorLeft, true);
-  if (intersects.length > 0 && doorLeftPivot) {
+  makeButton("Toggle Left Door", () => {
     doorLeftOpen = !doorLeftOpen;
-    return;
-  }
+  });
 
-  if (doorRight) intersects = raycaster.intersectObject(doorRight, true);
-  if (intersects.length > 0 && doorRightPivot) {
+  makeButton("Toggle Right Door", () => {
     doorRightOpen = !doorRightOpen;
-    return;
-  }
+  });
+}
 
-// If no part is clicked, toggle paused
-  if (intersects.length === 0) {
-    paused = !paused;
-  }
-});
 // Spacebar to pause/resume rotation
 window.addEventListener("keydown", (event) => {
   if(event.code === "Space"){
@@ -196,11 +267,12 @@ window.addEventListener("keydown", (event) => {
   }
 });
 
-// Mobile tap 
-renderer.domElement.addEventListener("touchstart", (e) => {
-  e.preventDefault(); // prevents scrolling
-  paused = !paused;
-  console.log("Paused:", paused);
+// Mobile tap to toggle paused state, but only if a button is NOT pressed
+window.addEventListener("touchstart", (e) => {
+  // e.target is the element that was tapped
+  if (e.target.tagName !== "BUTTON") {
+    paused = !paused;
+  }
 });
 
 // Camera
@@ -263,6 +335,14 @@ function animate(){
   if (bonnetPivot) {
     const targetRotation = bonnetOpen ? -Math.PI/4 : 0;
     bonnetPivot.rotation.x -= (targetRotation + bonnetPivot.rotation.x) * 0.05;
+  
+  // Wheel Spinning
+  if (bonnetOpen) {
+      if (rearWheelLeft) rearWheelLeft.rotation.x -= 0.1; // adjust speed
+      if (rearWheelRight) rearWheelRight.rotation.x -= 0.1;
+      if (frontWheelLeft) frontWheelLeft.rotation.x -= 0.1; // adjust speed
+      if (frontWheelRight) frontWheelRight.rotation.x -= 0.1;
+  }
 
   // Audio logic
   if (bonnetOpen && !bonnetSoundPlaying) {
@@ -282,7 +362,5 @@ function animate(){
   controls.update();
   composer.render();
 }
-
-
 
 
