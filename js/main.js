@@ -5,7 +5,7 @@ import { EffectComposer } from "https://cdn.skypack.dev/three@0.129.0/examples/j
 import { RenderPass } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/postprocessing/RenderPass.js";
 import { OutlinePass } from "https://cdn.skypack.dev/three@0.129.0/examples/jsm/postprocessing/OutlinePass.js";
 
-// Audio setup
+// Audio setup 2
 const startupSound = new Audio('./sounds/startup.mp3');
 const idleSound = new Audio('./sounds/idle.mp3');
 idleSound.loop = true;
