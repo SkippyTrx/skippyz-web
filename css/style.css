@@ -1,21 +1,216 @@
+/* GLOBAL */
+
+html,
 body {
   margin: 0;
-  font-family: "Montserrat", sans-serif;
-  background: radial-gradient(circle at center, #0b0c1e 0%, #000010 100%);
+  min-height: 100%;
+  background: #000;
   overflow: hidden;
-  color: white;
 }
 
-header {
-  margin-top: 3em;
-  text-align: center;
-  color: white;
+body {
+  font-family: 'Cinzel', serif;
 }
 
-#container3D canvas {
-  width: 100vw !important;
-  height: 100vh !important;
-  position: absolute;
-  top: 0;
-  left: 0;
+#stars {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.logo-container {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1;
+}
+
+/* SVG */
+
+#skippy-svg {
+  width: min(76vw, 1280px);
+  max-width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+  filter:
+    drop-shadow(0 0 4px rgba(255, 255, 255, 0.08))
+    drop-shadow(0 0 16px rgba(255, 255, 255, 0.05));
+}
+
+/* LETTERS */
+
+.letter {
+  fill: none;
+  stroke: rgba(255, 255, 255, 1);
+  stroke-width: 2.3;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+  vector-effect: non-scaling-stroke;
+  filter: blur(0.18px) drop-shadow(0 0 18px rgba(255, 255, 255, 0.32));
+  opacity: 1;
+  transform-origin: center center;
+  will-change: transform, filter, opacity;
+}
+
+/* LEFT SIDE */
+
+.draw-left {
+  stroke-dasharray: 4000;
+  stroke-dashoffset: 4000;
+  animation:
+    drawLeft 2.7s cubic-bezier(.77, 0, .2, 1) forwards;
+}
+
+/* CENTER */
+
+.draw-center {
+  stroke-dasharray: 4000;
+  stroke-dashoffset: 4000;
+  animation:
+    drawCenter 2s ease forwards 1.8s;
+}
+
+/* RIGHT SIDE */
+
+.draw-right {
+  stroke-dasharray: 4000;
+  stroke-dashoffset: -4000;
+  animation:
+    drawRight 2.7s cubic-bezier(.77, 0, .2, 1) forwards;
+}
+
+/* VOLATILE LETTERS */
+
+.letter.volatile {
+  filter: url(#jitter) blur(0.45px) drop-shadow(0 0 42px rgba(255, 255, 255, 0.68));
+  stroke-width: 2.8;
+  stroke-dasharray: none;
+}
+
+.letter.flicker {
+  animation: flickerPulse 0.32s ease-in-out both;
+  filter: url(#jitter) blur(0.32px) drop-shadow(0 0 26px rgba(255, 255, 255, 0.5));
+  opacity: 0.55;
+  stroke-dasharray: none;
+}
+
+@keyframes flickerPulse {
+  0%, 100% { opacity: 1; filter: blur(0.18px) drop-shadow(0 0 16px rgba(255, 255, 255, 0.4)); }
+  25% { opacity: 0.55; filter: blur(0.36px) drop-shadow(0 0 28px rgba(255, 255, 255, 0.55)); }
+  50% { opacity: 0.35; filter: blur(0.5px) drop-shadow(0 0 36px rgba(255, 255, 255, 0.65)); }
+  75% { opacity: 0.7; filter: blur(0.24px) drop-shadow(0 0 24px rgba(255, 255, 255, 0.5)); }
+}
+
+/* DOTS */
+
+.start-dot {
+  fill: white;
+  animation: flash 1.2s ease forwards;
+}
+
+/* DRAW LEFT */
+
+@keyframes drawLeft {
+  0% {
+    stroke-dashoffset: 4000;
+    opacity: 0;
+    stroke-width: 0.3;
+  }
+  5% {
+    opacity: 1;
+  }
+  30% {
+    stroke-width: 4px;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    stroke-width: 2.2;
+  }
+}
+
+/* DRAW CENTER */
+
+@keyframes drawCenter {
+  0% {
+    stroke-dashoffset: 4000;
+    opacity: 0;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+/* DRAW RIGHT */
+
+@keyframes drawRight {
+  0% {
+    stroke-dashoffset: -4000;
+    opacity: 0;
+    stroke-width: 0.3;
+  }
+  5% {
+    opacity: 1;
+  }
+  30% {
+    stroke-width: 4px;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    stroke-width: 2.2;
+  }
+}
+
+/* START DOTS */
+
+@keyframes flash {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(3);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+}
+
+/* ERRATIC MOVEMENT */
+
+@keyframes volatileShake {
+  0% {
+    transform: translate(0px, 0px) rotate(0deg) skew(0deg, 0deg);
+  }
+  15% {
+    transform: translate(-12px, 6px) rotate(-4deg) skew(-6deg, 3deg);
+  }
+  30% {
+    transform: translate(9px, -12px) rotate(3.5deg) skew(4.5deg, -4.5deg);
+  }
+  45% {
+    transform: translate(-13px, 7px) rotate(-4.5deg) skew(-5deg, 5deg);
+  }
+  60% {
+    transform: translate(10px, -9px) rotate(4deg) skew(6deg, -3deg);
+  }
+  75% {
+    transform: translate(-7px, 13px) rotate(-3deg) skew(-6deg, 3.5deg);
+  }
+  90% {
+    transform: translate(11px, -10px) rotate(3.8deg) skew(5deg, -5deg);
+  }
+  100% {
+    transform: translate(0px, 0px) rotate(0deg) skew(0deg, 0deg);
+  }
 }
