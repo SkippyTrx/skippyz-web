@@ -1,369 +1,155 @@
-import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
-import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
-import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js";
+const canvas = document.getElementById("stars");
 
-// Audio setup
-const startupSound = new Audio('./sounds/startup.mp3');
-const idleSound = new Audio('./sounds/idle.mp3');
-idleSound.loop = true;
+const ctx = canvas.getContext("2d");
 
-let bonnetSoundPlaying = false; // tracks if startup/idle sequence is active
+let w = canvas.width = window.innerWidth;
+let h = canvas.height = window.innerHeight;
 
-let paused = false;
+/* RESIZE */
 
-// Scene, camera, renderer
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.outputEncoding = THREE.sRGBEncoding;
-renderer.shadowMap.enabled = true;
-document.getElementById("container3D").appendChild(renderer.domElement);
+window.addEventListener("resize", () => {
 
-// Controls
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.05;
+  w = canvas.width = window.innerWidth;
+  h = canvas.height = window.innerHeight;
 
-// Lighting
-scene.add(new THREE.AmbientLight(0xffffff, 1));
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
-directionalLight.position.set(5, 10, 7.5);
-directionalLight.castShadow = true;
-scene.add(directionalLight);
-
-const sideLightRight = new THREE.DirectionalLight(0xffffff, 1.5);
-sideLightRight.position.set(-10, 15, 0);
-scene.add(sideLightRight);
-
-const sideLightLeft = new THREE.DirectionalLight(0xffffff, 1.5);
-sideLightLeft.position.set(10, 5, 0);
-scene.add(sideLightLeft);
-
-// Raycaster
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-
-// Composer + OutlinePass
-const composer = new EffectComposer(renderer);
-const renderPass = new RenderPass(scene, camera);
-composer.addPass(renderPass);
-
-const outlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
-outlinePass.edgeStrength = 4;
-outlinePass.edgeGlow = 0.3;
-outlinePass.edgeThickness = 2;
-outlinePass.visibleEdgeColor.set("#ff0000");
-outlinePass.hiddenEdgeColor.set("#000000");
-outlinePass.renderToScreen = true;
-composer.addPass(outlinePass);
-
-// Load GLTF
-let model, bonnet, bonnetPivot, boot, bootPivot, rearWheelLeft, rearWheelRight, frontWheelLeft, frontWheelRight, exhaustTips;
-let bonnetOpen = false;
-let bootOpen = false;
-
-let doorLeft, doorLeftPivot, doorLeftOpen = false;
-let doorRight, doorRightPivot, doorRightOpen = false;
-// Detect mobile device
-const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)|| window.innerWidth <= 768;
-
-//LOADER
-const loader = new GLTFLoader();
-loader.load("./models/myModel.glb", (gltf) => {
-  model = gltf.scene;
-  model.scale.set(2,2,2);
-  scene.add(model);
-
-  // --- EXHAUST ---
-  exhaustTips = model.getObjectByName("ExhaustTips");
-
-  // --- WHEEELS ---
-  rearWheelLeft = model.getObjectByName("RearWheelLeft");
-  rearWheelRight = model.getObjectByName("RearWheelRight");
-  frontWheelLeft = model.getObjectByName("FrontWheelLeft");
-  frontWheelRight = model.getObjectByName("FrontWheelRight");
-
-  // --- BONNET ---
-  bonnet = model.getObjectByName("Bonnet");
-
-  bonnetPivot = new THREE.Object3D();
-  model.add(bonnetPivot);
-
-  const bboxBonnet = new THREE.Box3().setFromObject(bonnet);
-  const hingeXb = (bboxBonnet.min.x + bboxBonnet.max.x)/2;
-  const hingeYb = bboxBonnet.min.y;
-  const hingeZb = bboxBonnet.max.z;
-  bonnetPivot.position.set(hingeXb, hingeYb, hingeZb);
-  bonnet.position.sub(bonnetPivot.position);
-  bonnetPivot.add(bonnet);
-
-  // --- BOOT ---
-  boot = model.getObjectByName("Boot");
-
-  bootPivot = new THREE.Object3D();
-  model.add(bootPivot);
-
-  const bboxBoot = new THREE.Box3().setFromObject(boot);
-  const hingeXboot = (bboxBoot.min.x + bboxBoot.max.x)/2;
-  const hingeYboot = bboxBoot.min.y;
-  const hingeZboot = bboxBoot.min.z;
-  bootPivot.position.set(hingeXboot, hingeYboot, hingeZboot);
-  boot.position.sub(bootPivot.position);
-  bootPivot.add(boot);
-
-  // --- DOOR LEFT ---
-  doorLeft = model.getObjectByName("DoorLeft");
-
-  doorLeftPivot = new THREE.Object3D();
-  model.add(doorLeftPivot);
-
-  const bboxDoorLeft = new THREE.Box3().setFromObject(doorLeft);
-  const hingeXLeft = (bboxDoorLeft.min.x)+0.5;
-  const hingeYLeft = bboxDoorLeft.min.y;
-  const hingeZLeft = bboxDoorLeft.min.z;
-
-  doorLeftPivot.position.set(hingeXLeft, hingeYLeft, hingeZLeft);
-  doorLeft.position.sub(doorLeftPivot.position);
-  doorLeftPivot.add(doorLeft);
-
-  // --- DOOR RIGHT ---
-  doorRight = model.getObjectByName("DoorRight");
-
-  doorRightPivot = new THREE.Object3D();
-  model.add(doorRightPivot);
-
-  const bboxDoorRight = new THREE.Box3().setFromObject(doorRight);
-  const hingeXRight = bboxDoorRight.max.x-0.5;
-  const hingeYRight = bboxDoorRight.min.y;
-  const hingeZRight = bboxDoorRight.min.z;
-  doorRightPivot.position.set(hingeXRight, hingeYRight, hingeZRight);
-  doorRight.position.sub(doorRightPivot.position);
-  doorRightPivot.add(doorRight);
-
-  animate();
-}, undefined, (err)=>console.error(err));
-//LOADER END
-
-// Mouse hover detection
-window.addEventListener("mousemove", (event)=>{
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-  raycaster.setFromCamera(mouse, camera);
-
-  let intersects = [];
-  if(bonnet) intersects = raycaster.intersectObject(bonnet, true);
-  if(intersects.length === 0 && boot) intersects = raycaster.intersectObject(boot, true);
-  if(intersects.length === 0 && doorLeft) intersects = raycaster.intersectObject(doorLeft, true);
-  if(intersects.length === 0 && doorRight) intersects = raycaster.intersectObject(doorRight, true);
-
-  if(intersects.length > 0){
-    // Find top-level parent object (bonnet, boot, doorLeft, doorRight)
-    let topObject = intersects[0].object;
-    while(topObject.parent && topObject.parent !== model){
-      topObject = topObject.parent;
-    }
-    outlinePass.selectedObjects = [topObject];
-  } else {
-    outlinePass.selectedObjects = [];
-  }
-
-  document.body.style.cursor = intersects.length > 0 ? "pointer" : "default";
+  createStars();
 });
 
-//FOR PC 
-if(!isMobile){
-  window.addEventListener("click", () => {
-    raycaster.setFromCamera(mouse, camera);
+/* STARS */
 
-    let intersects = [];
-    if (bonnet) intersects = raycaster.intersectObject(bonnet, true);
-    if (intersects.length > 0 && bonnetPivot) {
-      bonnetOpen = !bonnetOpen;
-      return;
-    }
+const STAR_COUNT = 240;
 
-    if (boot) intersects = raycaster.intersectObject(boot, true);
-    if (intersects.length > 0 && bootPivot) {
-      bootOpen = !bootOpen;
-      return;
-    }
+let stars = [];
 
-    if (doorLeft) intersects = raycaster.intersectObject(doorLeft, true);
-    if (intersects.length > 0 && doorLeftPivot) {
-      doorLeftOpen = !doorLeftOpen;
-      return;
-    }
+function createStars() {
 
-    if (doorRight) intersects = raycaster.intersectObject(doorRight, true);
-    if (intersects.length > 0 && doorRightPivot) {
-      doorRightOpen = !doorRightOpen;
-      return;
-    }
+  stars = [];
 
-    // If no part is clicked, toggle paused
-      if (intersects.length === 0) {
-        paused = !paused;
-      }
-  });
+  for (let i = 0; i < STAR_COUNT; i++) {
+
+    stars.push({
+
+      x: Math.random() * w,
+      y: Math.random() * h,
+
+      radius: 0.7 + Math.random() * 1.3,
+
+      alpha: 0.4 + Math.random() * 0.4,
+
+      speed: 0.02 + Math.random() * 0.08,
+
+      drift: (Math.random() - 0.5) * 0.15
+    });
+  }
 }
 
-//FOR MOBILE 
+createStars();
 
-if (isMobile) {
+/* DRAW */
 
-  // Create a container for buttons
-  const btnContainer = document.createElement("div");
-  btnContainer.style.position = "absolute";
-  btnContainer.style.bottom = "20px";
-  btnContainer.style.left = "50%";
-  btnContainer.style.transform = "translateX(-50%)";
-  btnContainer.style.display = "flex";
-  btnContainer.style.gap = "10px";
-  btnContainer.style.zIndex = "100";
-  document.body.appendChild(btnContainer);
+function drawStars() {
 
-  // Helper to make a button
-  function makeButton(label, onClick) {
-    const btn = document.createElement("button");
-    btn.innerText = label;
-    btn.style.padding = "20px 25px";
-    btn.style.fontSize = "14px";
-    btn.style.borderRadius = "8px";
-    btn.style.border = "none";
-    btn.style.background = "#333";
-    btn.style.color = "#fff";
-    btn.style.cursor = "pointer";
-    btn.addEventListener("click", onClick);
-    btnContainer.appendChild(btn);
-  }
+  ctx.clearRect(0, 0, w, h);
 
-  // Buttons for car parts
-  makeButton("Toggle Bonnet", () => {
-    bonnetOpen = !bonnetOpen;
-  });
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, w, h);
 
-  makeButton("Toggle Boot", () => {
-    bootOpen = !bootOpen;
-  });
+  stars.forEach((star) => {
 
-  makeButton("Toggle Left Door", () => {
-    doorLeftOpen = !doorLeftOpen;
-  });
+    star.y += star.speed;
+    star.x += star.drift;
 
-  makeButton("Toggle Right Door", () => {
-    doorRightOpen = !doorRightOpen;
-  });
-}
+    if (star.y > h) {
 
-// Spacebar to pause/resume rotation
-window.addEventListener("keydown", (event) => {
-  if(event.code === "Space"){
-    paused = !paused;
-  }
-});
+      star.y = 0;
+      star.x = Math.random() * w;
+    }
 
-// Mobile tap to toggle paused state, but only if a button is NOT pressed
-window.addEventListener("touchstart", (e) => {
-  // e.target is the element that was tapped
-  if (e.target.tagName !== "BUTTON") {
-    paused = !paused;
-  }
-});
+    /* TWINKLE */
 
-// Camera
-camera.position.set(0,10,35);
+    star.alpha += (Math.random() - 0.5) * 0.02;
 
-// Window resize
-window.addEventListener("resize", ()=>{
-  camera.aspect = window.innerWidth/window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  composer.setSize(window.innerWidth, window.innerHeight);
-});
+    if (star.alpha < 0.05) star.alpha = 0.05;
+    if (star.alpha > 0.6) star.alpha = 0.6;
 
-// Stars
-function addStars(){
-  const geom = new THREE.BufferGeometry();
-  const verts = [];
-  for(let i=0;i<1000;i++){
-    verts.push(
-      THREE.MathUtils.randFloatSpread(2000),
-      THREE.MathUtils.randFloatSpread(2000),
-      THREE.MathUtils.randFloatSpread(2000)
+    ctx.beginPath();
+
+    ctx.arc(
+      star.x,
+      star.y,
+      star.radius,
+      0,
+      Math.PI * 2
     );
-  }
-  geom.setAttribute("position", new THREE.Float32BufferAttribute(verts,3));
-  const pts = new THREE.Points(geom, new THREE.PointsMaterial({color:0xffffff, size:0.5}));
-  scene.add(pts);
+
+    ctx.fillStyle = `rgba(255,255,255,${star.alpha})`;
+
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = "white";
+
+    ctx.fill();
+  });
+
+  requestAnimationFrame(drawStars);
 }
-addStars();
 
-function animate(){
-  requestAnimationFrame(animate);
+drawStars();
 
-  if(model && !paused) model.rotation.y += 0.005;
+const letterNodes = Array.from(document.querySelectorAll('.letter'));
 
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
-  // Smooth bonnet rotation
-  if(bonnetPivot){
-    const targetRotation = bonnetOpen ? -Math.PI/4 : 0;
-    bonnetPivot.rotation.x -= (targetRotation + bonnetPivot.rotation.x) * 0.05;
+function triggerDistortion() {
+  if (!letterNodes.length) {
+    setTimeout(triggerDistortion, 2500);
+    return;
   }
 
-  // Smooth boot rotation
-  if(bootPivot){
-    const targetRotation = bootOpen ? Math.PI/4 : 0;
-    bootPivot.rotation.x -= (targetRotation + bootPivot.rotation.x) * 0.05;
-  }
+  const selected = letterNodes[randomInt(0, letterNodes.length - 1)];
 
-  // Smooth DoorLeft rotation
-  if(doorLeftPivot){
-    const targetRotation = doorLeftOpen ? Math.PI/3 : 0;
-    doorLeftPivot.rotation.y -= (targetRotation + doorLeftPivot.rotation.y) * 0.05;
-  }
-
-  // Smooth DoorRight rotation
-  if(doorRightPivot){
-    const targetRotation = doorRightOpen ? -Math.PI/3 : 0;
-    doorRightPivot.rotation.y -= (targetRotation + doorRightPivot.rotation.y) * 0.05;
-  }
-  if (bonnetPivot) {
-    const targetRotation = bonnetOpen ? -Math.PI/4 : 0;
-    bonnetPivot.rotation.x -= (targetRotation + bonnetPivot.rotation.x) * 0.05;
-  
-  // Wheel Spinning
-  if (bonnetOpen) {
-      if (rearWheelLeft) rearWheelLeft.rotation.x -= 0.1; // adjust speed
-      if (rearWheelRight) rearWheelRight.rotation.x -= 0.1;
-      if (frontWheelLeft) frontWheelLeft.rotation.x -= 0.1; // adjust speed
-      if (frontWheelRight) frontWheelRight.rotation.x -= 0.1;
-  }
-
-  // Audio logic
-  if (bonnetOpen && !bonnetSoundPlaying) {
-      bonnetSoundPlaying = true;
-      startupSound.play();
-      startupSound.onended = () => {
-          idleSound.play(); // start looping idle after startup finishes
-      };
-    } else if (!bonnetOpen && bonnetSoundPlaying) {
-      bonnetSoundPlaying = false;
-      startupSound.pause();
-      startupSound.currentTime = 0;
-      idleSound.pause();
-      idleSound.currentTime = 0;
+  // Randomize distortion filter
+  const jitterFilter = document.getElementById('jitter');
+  if (jitterFilter) {
+    const turbulence = jitterFilter.querySelector('feTurbulence');
+    const displacement = jitterFilter.querySelector('feDisplacementMap');
+    if (turbulence && displacement) {
+      const randBase = 0.03 + Math.random() * 0.05;
+      const randScale = 12 + Math.random() * 12;
+      turbulence.setAttribute('baseFrequency', randBase);
+      displacement.setAttribute('scale', randScale);
     }
   }
-  controls.update();
-  composer.render();
+
+  selected.classList.add('volatile');
+
+  setTimeout(() => {
+    selected.classList.remove('volatile');
+  }, 1000 + Math.random() * 2000); // Last 1-3 seconds
+
+  setTimeout(triggerDistortion, 2000 + Math.random() * 3000); // Every 2-5 seconds
 }
 
+function triggerFlicker() {
+  if (!letterNodes.length) {
+    setTimeout(triggerFlicker, 1000);
+    return;
+  }
 
+  const selected = letterNodes[randomInt(0, letterNodes.length - 1)];
 
+  selected.classList.add('flicker');
 
+  const handler = () => {
+    selected.classList.remove('flicker');
+    selected.removeEventListener('animationend', handler);
+  };
 
+  selected.addEventListener('animationend', handler);
+
+  setTimeout(triggerFlicker, 500 + Math.random() * 1000); // Every 0.5-1.5 seconds
+}
+
+setTimeout(triggerDistortion, 1000 + Math.random() * 2000);
+setTimeout(triggerFlicker, 200 + Math.random() * 500);
