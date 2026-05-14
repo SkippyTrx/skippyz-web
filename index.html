@@ -1,33 +1,404 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <meta charset="utf-8" />
-    <title>SkippyZ</title>
-    <link rel="stylesheet" href="css/style.css" />
-  </head>
-  <body>
-    <header>
-      <h1>S K I P P Y Z </h1>
-    </header>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Skippy</title>
 
-    <main>
-      <div id="container3D"></div>
-    </main>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <script type="importmap">
-      {
-        "imports": {
-          "three": "https://cdn.jsdelivr.net/npm/three@0.129.0/build/three.module.js",
-          "three/examples/jsm/": "https://cdn.jsdelivr.net/npm/three@0.129.0/examples/jsm/"
-        }
-      }
-    </script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap"
+    rel="stylesheet"
+  >
 
-    <!-- Load JS as module -->
-    <script type="module" src="js/main.js"></script>
-  </body>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body>
+
+  <!-- STAR BACKGROUND -->
+  <canvas id="stars"></canvas>
+
+    <!-- LOGO -->
+    <div class="logo-container">
+
+    <svg
+        id="skippy-svg"
+        viewBox="350 220 1200 520"
+        xmlns="http://www.w3.org/2000/svg"
+    >
+        <defs>
+            <filter id="jitter" x="-30%" y="-30%" width="160%" height="160%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="5" result="noise">
+                    <animate attributeName="baseFrequency" values="0.03;0.08;0.04;0.07" dur="0.16s" repeatCount="indefinite" />
+                </feTurbulence>
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="10" xChannelSelector="R" yChannelSelector="G">
+                    <animate attributeName="scale" values="6;14;8;16;12" dur="0.16s" repeatCount="indefinite" />
+                </feDisplacementMap>
+            </filter>
+        </defs>
+
+        <!-- LEFT START -->
+        <circle class="start-dot left-dot" cx="425" cy="582" r="3" />
+
+        <!-- RIGHT START -->
+        <circle class="start-dot right-dot" cx="1400" cy="666" r="3" />
+
+        <!-- S -->
+        <path
+        class="letter draw-left"
+        d="
+        M425 582
+        L446 567
+        L474 566
+        L498 580
+        L508 589
+        L534 570
+        L566 543
+        L577 513
+        L571 479
+        L550 454
+        L524 445
+        L511 445
+        L496 465
+        L475 470
+        L458 458
+        L448 434
+        L457 413
+        L467 401
+        L487 410
+        L509 413
+        L537 409
+        L555 398
+        L570 380
+        L556 369
+        L538 385
+        L520 388
+        L502 382
+        L485 366
+        L467 378
+        L445 396
+        L428 416
+        L423 441
+        L426 469
+        L438 490
+        L460 504
+        L480 510
+        L495 489
+        L515 482
+        L532 489
+        L546 503
+        L547 519
+        L542 534
+        L533 546
+        L519 556
+        L504 546
+        L483 538
+        L462 538
+        L443 548
+        L426 559
+        L415 572
+        L424 581
+        "
+        />
+
+        <!-- K -->
+        <path
+        class="letter draw-left"
+        d="
+        M671 589
+        L698 571
+        L724 555
+        L722 538
+        L703 547
+        L685 547
+        L673 535
+        L669 512
+        L671 401
+        L723 400
+        L725 382
+        L671 381
+        L680 357
+        L704 348
+        L724 351
+        L726 319
+        L696 323
+        L678 334
+        L670 348
+        L673 315
+        L688 295
+        L712 291
+        L722 291
+        L724 278
+        L710 278
+        L683 282
+        L658 292
+        L637 298
+        L619 294
+        L602 289
+        L602 302
+        L620 311
+        L639 329
+        L641 351
+        L634 373
+        L616 384
+        L598 385
+        L598 400
+        L639 400
+        L639 511
+        L639 533
+        L629 545
+        L619 545
+        L620 558
+        L638 565
+        L656 574
+        L670 588
+        "
+        />
+
+        <!-- I -->
+        <path
+        class="letter draw-left"
+        d="
+        M800 587
+        L826 571
+        L850 559
+        L849 541
+        L832 548
+        L815 537
+        L811 509
+        L810 484
+        L812 443
+        L815 421
+        L828 411
+        L840 409
+        L839 399
+        L828 394
+        L813 381
+        L799 367
+        L784 378
+        L770 387
+        L756 396
+        L747 403
+        L746 416
+        L761 410
+        L772 416
+        L781 431
+        L778 531
+        L779 552
+        L787 569
+        L798 588
+        "
+        />
+
+        <!-- I DOT -->
+        <path
+        class="letter draw-left"
+        d="
+        M796 338
+        L814 317
+        L823 296
+        L813 280
+        L797 275
+        L778 279
+        L772 297
+        L779 318
+        L795 338
+        "
+        />
+
+        <!-- FIRST P OUTER -->
+        <path
+        class="letter draw-center"
+        d="
+        M915 659
+        L928 659
+        L933 621
+        L938 582
+        L936 555
+        L960 565
+        L985 580
+        L1015 561
+        L1044 533
+        L1055 495
+        L1063 457
+        L1053 416
+        L1038 384
+        L1018 371
+        L1005 363
+        L966 387
+        L939 405
+        L929 381
+        L913 367
+        L891 376
+        L866 392
+        L866 407
+        L879 400
+        L895 401
+        L905 415
+        L906 443
+        L906 526
+        L887 534
+        L874 544
+        L866 553
+        L872 563
+        L889 553
+        L905 550
+        L907 590
+        L910 624
+        L913 659
+        "
+        />
+
+        <!-- FIRST P INNER -->
+        <path
+        class="letter draw-center"
+        d="
+        M939 531
+        L937 421
+        L965 407
+        L1000 405
+        L1016 422
+        L1025 456
+        L1023 489
+        L1021 512
+        L1014 531
+        L994 552
+        L966 538
+        L937 529
+        "
+        />
+
+        <!-- SECOND P OUTER -->
+        <path
+        class="letter draw-right"
+        d="
+        M1151 659
+        L1164 659
+        L1169 621
+        L1174 582
+        L1172 555
+        L1196 565
+        L1221 580
+        L1251 561
+        L1280 533
+        L1291 495
+        L1299 457
+        L1289 416
+        L1274 384
+        L1254 371
+        L1241 363
+        L1202 387
+        L1175 405
+        L1165 381
+        L1149 367
+        L1127 376
+        L1102 392
+        L1102 407
+        L1115 400
+        L1131 401
+        L1141 415
+        L1142 443
+        L1142 526
+        L1123 534
+        L1110 544
+        L1102 553
+        L1108 563
+        L1125 553
+        L1141 550
+        L1143 590
+        L1146 624
+        L1149 659
+        "
+        />
+
+        <!-- SECOND P INNER -->
+        <path
+        class="letter draw-right"
+        d="
+        M1175 531
+        L1173 421
+        L1201 407
+        L1236 405
+        L1252 422
+        L1261 456
+        L1259 489
+        L1257 512
+        L1250 531
+        L1230 552
+        L1202 538
+        L1173 529
+        "
+        />
+
+        <!-- Y -->
+        <path
+        class="letter draw-right"
+        d="
+        M1400 666
+        L1435 642
+        L1462 611
+        L1483 575
+        L1495 532
+        L1495 482
+        L1495 434
+        L1477 401
+        L1460 373
+        L1442 363
+        L1425 380
+        L1400 392
+        L1375 405
+        L1365 381
+        L1350 365
+        L1330 379
+        L1301 394
+        L1305 408
+        L1320 399
+        L1334 402
+        L1341 416
+        L1345 440
+        L1346 468
+        L1345 506
+        L1343 529
+        L1334 540
+        L1320 544
+        L1322 556
+        L1338 560
+        L1352 568
+        L1361 577
+        L1367 583
+        L1381 573
+        L1398 562
+        L1422 547
+        L1415 534
+        L1398 543
+        L1390 547
+        L1377 536
+        L1375 422
+        L1398 411
+        L1420 406
+        L1438 410
+        L1451 431
+        L1458 460
+        L1459 490
+        L1460 534
+        L1455 571
+        L1445 597
+        L1431 617
+        L1417 633
+        L1404 646
+        L1389 655
+        L1401 667
+        "
+        />
+
+    </svg>
+
+    </div>
+
+  <script src="./js/main.js"></script>
+
+</body>
 </html>
-
-
-<!-- CODE CREDITS TO Gabriel Molter -->
