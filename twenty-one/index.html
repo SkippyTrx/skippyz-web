@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#080808">
+<title>TWENTY ONE — Gothic Counter</title>
+<style>
+:root{--bg:#050505;--panel:#101010;--text:#e4e4e4;--muted:#858585;--line:#303030}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text)}
+body{font-family:Georgia,"Times New Roman",serif;background:radial-gradient(ellipse at 50% -15%,#292929 0%,#111 27%,#070707 62%,#030303 100%)}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.075;background-image:linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px);background-size:5px 5px}
+body:after{content:"";position:fixed;inset:0;pointer-events:none;box-shadow:inset 0 0 140px #000}
+.app{position:relative;width:min(100%,820px);margin:auto;padding:20px 13px 30px}
+header{text-align:center;margin:5px 0 20px}
+h1{margin:8px 0 2px;font-size:clamp(34px,10vw,64px);font-weight:900;letter-spacing:5px;color:#ddd;text-shadow:2px 2px 0 #000,0 0 22px #aaa5}
+.ornament{color:#777;letter-spacing:7px;font-size:13px}
+.box,.card,.controls{background:linear-gradient(145deg,#151515,#090909);border:1px solid var(--line);box-shadow:0 14px 40px #000,inset 0 1px #ffffff08}
+.betbox{padding:16px;margin-bottom:13px;text-align:center}
+.label{font-family:Arial,sans-serif;font-size:9px;letter-spacing:4px;color:#777}
+.bet{font-family:Arial,sans-serif;font-size:60px;line-height:1;font-weight:900;color:#ddd;text-shadow:0 0 16px #fff3}
+.bet-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+button{appearance:none;border:1px solid #3b3b3b;background:#151515;color:#ddd;min-height:45px;padding:11px 9px;border-radius:2px;font-family:Arial,sans-serif;font-size:11px;font-weight:800;letter-spacing:1.5px;box-shadow:inset 0 1px #fff08,0 4px 10px #000}
+button:active{transform:translateY(1px);background:#292929}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.card{padding:15px;position:relative;overflow:hidden}
+.card:before{content:"✦";position:absolute;right:8px;top:-16px;color:#444;font-size:100px;transform:rotate(18deg);opacity:.16}
+.name{font-family:Arial,sans-serif;font-size:10px;letter-spacing:2.5px;color:#777}
+.points{font-family:Arial,sans-serif;font-size:clamp(50px,16vw,88px);line-height:.95;font-weight:900;margin:13px 0;color:#ddd}
+.status{height:30px;font-family:Arial,sans-serif;font-size:18px;font-weight:900;letter-spacing:4px;color:#777}
+.dead{border-color:#555;background:linear-gradient(145deg,#181818,#050505)}
+.dead .points{color:#777;text-decoration:line-through}
+.dead .status{color:#aaa}
+.won{border-color:#999;box-shadow:0 0 24px #fff2,inset 0 1px #fff2}
+.won .status{color:#eee;text-shadow:0 0 10px #fff8}
+.actions{display:block}
+.win{width:100%;background:#252525;border-color:#5b5b5b;color:#fff}
+.controls{margin-top:12px;padding:11px;display:grid;gap:8px}
+.full{width:100%}
+.danger{background:#0a0a0a;color:#999;border-color:#444}
+.hint{margin-top:14px;text-align:center;color:#555;font-family:Arial,sans-serif;font-size:9px;line-height:1.7;letter-spacing:1px;text-transform:uppercase}
+@media(max-width:430px){.app{padding-left:9px;padding-right:9px}.card{padding:11px}.points{margin-top:11px}}
+
+.trump-section{margin-top:22px;padding:16px 0 8px;border-top:1px solid #303030}
+.trump-heading{text-align:center;margin:4px 0 16px}
+.trump-heading h2{font-family:Georgia,"Times New Roman",serif;font-size:28px;letter-spacing:4px;margin:0;color:#ddd;text-shadow:2px 2px #000}
+.trump-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.trump-card{background:linear-gradient(145deg,#151515,#090909);border:1px solid #303030;box-shadow:0 10px 28px #000,inset 0 1px #ffffff08;padding:15px 12px 16px;text-align:center;min-width:0}
+.trump-icon{height:92px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+.trump-icon img{display:block;max-width:92px;max-height:88px;width:auto;height:auto;filter:none}
+.trump-name{font-family:Georgia,"Times New Roman",serif;font-weight:900;font-size:19px;line-height:1.05;letter-spacing:.5px;color:#e5e5e5;margin-bottom:8px}
+.trump-desc{font-family:Georgia,"Times New Roman",serif;font-size:12px;line-height:1.38;color:#aaa}
+@media(max-width:430px){.trump-section{margin-top:18px}.trump-card{padding:12px 9px 14px}.trump-icon{height:78px}.trump-icon img{max-width:78px;max-height:74px}.trump-name{font-size:17px}.trump-desc{font-size:11px;line-height:1.35}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+ <h1>TWENTY ONE</h1>
+ <div class="ornament">— — ✦ — —</div>
+</header>
+
+<section class="box betbox">
+ <div class="label">CURRENT BET</div>
+ <div id="bet" class="bet">1</div>
+ <div class="bet-controls">
+  <button onclick="changeBet(1)">＋ INCREASE BET</button>
+  <button onclick="changeBet(-1)">－ DECREASE BET</button>
+ </div>
+</section>
+
+<section class="cards">
+ <div id="p1card" class="card">
+  <div class="name">PLAYER ONE // LIVES</div>
+  <div id="p1" class="points">10</div>
+  <div id="p1status" class="status">ALIVE</div>
+  <div class="actions"><button class="win" onclick="win(1)">P1 WIN</button></div>
+ </div>
+ <div id="p2card" class="card">
+  <div class="name">PLAYER TWO // POINTS</div>
+  <div id="p2" class="points">10</div>
+  <div id="p2status" class="status">ALIVE</div>
+  <div class="actions"><button class="win" onclick="win(2)">P2 WIN</button></div>
+ </div>
+</section>
+
+<section class="controls">
+ <button class="full" onclick="draw()">☽ DRAW — NO POINTS LOST / RAISE BET</button>
+ <button class="danger full" onclick="resetGame()">☠ RESET GAME</button>
+</section>
+
+<section class="trump-section">
+ <div class="trump-heading"><h2>TRUMP CARDS</h2><div class="ornament">— — ✦ — —</div></div>
+ <div class="trump-grid">
+  <article class="trump-card"><div class="trump-icon"><img src="trump-icons/shieldplus.png" alt="Shield+ icon"></div><div class="trump-name">Shield+</div><div class="trump-desc">The bet decreases by 2 while this card is on the table.</div></article>
+  <article class="trump-card"><div class="trump-icon"><img src="trump-icons/shield.png" alt="Shield icon"></div><div class="trump-name">Shield</div><div class="trump-desc">The bet decreases by 1 while this card is on the table.</div></article>
+  <article class="trump-card"><div class="trump-icon"><img src="trump-icons/return.png" alt="Return icon"></div><div class="trump-name">Return</div><div class="trump-desc">Remove the last card you drew to the deck; if there is one card left, nothing happens.</div></article>
+  <article class="trump-card"><div class="trump-icon"><img src="trump-icons/reincarnation.png" alt="Reincarnation icon"></div><div class="trump-name">Reincarnation</div><div class="trump-desc">Remove the last trump card your opponent places on the table. Draw 1 trump card.</div></article>
+  <article class="trump-card"><div class="trump-icon"><img src="trump-icons/refresh.png" alt="Refresh icon"></div><div class="trump-name">Refresh</div><div class="trump-desc">All your cards are replaced with 2 new ones.</div></article>
+  <article class="trump-card"><div class="trump-icon"><img src="trump-icons/perfect_draw.png" alt="Perfect Draw icon"></div><div class="trump-name">Perfect Draw</div><div class="trump-desc">Draw the best possible card from the deck.</div></article>
+  <article class="trump-card"><div class="trump-icon"><img src="trump-icons/one_up.png" alt="One-up icon"></div><div class="trump-name">One-up</div><div class="trump-desc">The bet increases by 1 while this card is on the table.</div></article>
+  <article class="trump-card"><div class="trump-icon"><img src="trump-icons/two_up.png" alt="Two-up icon"></div><div class="trump-name">Two-up</div><div class="trump-desc">The bet increases by 2 while this card is on the table.</div></article>
+  <article class="trump-card"><div class="trump-icon"><img src="trump-icons/hush.png" alt="Hush icon"></div><div class="trump-name">Hush</div><div class="trump-desc">Draw a random face-down card. Enemy will not see the number on it.</div></article>
+  <article class="trump-card"><div class="trump-icon"><img src="trump-icons/go_for_17.png" alt="Go for 17 icon"></div><div class="trump-name">Go for 17</div><div class="trump-desc">The closest to 17 wins while this card is on the table. Replaces other Go For cards that are already on the table.</div></article>
+  <article class="trump-card"><div class="trump-icon"><img src="trump-icons/go_for_24.png" alt="Go for 24 icon"></div><div class="trump-name">Go for 24</div><div class="trump-desc">The closest to 24 wins while this card is on the table. Replaces other Go For cards that are already on the table.</div></article>
+  <article class="trump-card"><div class="trump-icon"><img src="trump-icons/go_for_27.png" alt="Go for 27 icon"></div><div class="trump-name">Go for 27</div><div class="trump-desc">The closest to 27 wins while this card is on the table. Replaces other Go For cards that are already on the table.</div></article>
+  <article class="trump-card"><div class="trump-icon"><img src="trump-icons/friendship.png" alt="Friendship icon"></div><div class="trump-name">Friendship</div><div class="trump-desc">Both players draw 2 trump cards.</div></article>
+  <article class="trump-card"><div class="trump-icon"><img src="trump-icons/exchange.png" alt="Exchange icon"></div><div class="trump-name">Exchange</div><div class="trump-desc">Swap the last cards drawn by you and your opponent. If there is only one card left, you cannot exchange it.</div></article>
+  <article class="trump-card"><div class="trump-icon"><img src="trump-icons/destroy.png" alt="Destroy icon"></div><div class="trump-name">Destroy</div><div class="trump-desc">Remove the last trump card your opponent places on the table.</div></article>
+  <article class="trump-card"><div class="trump-icon"><img src="trump-icons/bloodshed.png" alt="Bloodshed icon"></div><div class="trump-name">Bloodshed</div><div class="trump-desc">Draw 1 trump card. The bet increases by 1 while this card is on the table.</div></article>
+  <article class="trump-card"><div class="trump-icon"><img src="trump-icons/bless.png" alt="Bless icon"></div><div class="trump-name">Bless</div><div class="trump-desc">While this card is on the table, no one will die at the end of the round. If the trump card saved someone's life, the bet in the next round will be reduced by 1.</div></article>
+  <article class="trump-card"><div class="trump-icon"><img src="trump-icons/2_card.png" alt="2-Card icon"></div><div class="trump-name">2-Card</div><div class="trump-desc">Draws the 2 card; if this card is already on the table, nothing happens.</div></article>
+  <article class="trump-card"><div class="trump-icon"><img src="trump-icons/3_card.png" alt="3-Card icon"></div><div class="trump-name">3-Card</div><div class="trump-desc">Draws the 3 card; if this card is already on the table, nothing happens.</div></article>
+  <article class="trump-card"><div class="trump-icon"><img src="trump-icons/4_card.png" alt="4-Card icon"></div><div class="trump-name">4-Card</div><div class="trump-desc">Draws the 4 card; if this card is already on the table, nothing happens.</div></article>
+  <article class="trump-card"><div class="trump-icon"><img src="trump-icons/5_card.png" alt="5-Card icon"></div><div class="trump-name">5-Card</div><div class="trump-desc">Draws the 5 card; if this card is already on the table, nothing happens.</div></article>
+  <article class="trump-card"><div class="trump-icon"><img src="trump-icons/6_card.png" alt="6-Card icon"></div><div class="trump-name">6-Card</div><div class="trump-desc">Draws the 6 card; if this card is already on the table, nothing happens.</div></article>
+  <article class="trump-card"><div class="trump-icon"><img src="trump-icons/7_card.png" alt="7-Card icon"></div><div class="trump-name">7-Card</div><div class="trump-desc">Draws the 7 card; if this card is already on the table, nothing happens.</div></article>
+  <article class="trump-card"><div class="trump-icon"><img src="trump-icons/disservice.png" alt="Disservice icon"></div><div class="trump-name">Disservice</div><div class="trump-desc">Your opponent draws 1 card.</div></article>
+  <article class="trump-card"><div class="trump-icon"><img src="trump-icons/remove.png" alt="Remove icon"></div><div class="trump-name">Remove</div><div class="trump-desc">Remove the last card your opponent drew to the deck; if there is one card left, nothing happens.</div></article>
+ </div>
+</section>
+
+<div class="hint">
+ P1 WIN removes the bet from P2 and raises the bet by 1<br>
+ P2 WIN removes the bet from P1 and raises the bet by 1
+</div>
+</div>
+
+<script>
+const DEFAULT={bet:1,p1:10,p2:10};
+let s=JSON.parse(localStorage.getItem("twentyOneState")||"null")||{...DEFAULT};
+
+function save(){localStorage.setItem("twentyOneState",JSON.stringify(s));render()}
+
+function render(){
+ document.getElementById("bet").textContent=s.bet;
+ document.getElementById("p1").textContent=s.p1;
+ document.getElementById("p2").textContent=s.p2;
+ const p1dead=s.p1<=0,p2dead=s.p2<=0;
+ p1card.classList.toggle("dead",p1dead);
+ p2card.classList.toggle("dead",p2dead);
+ p1card.classList.toggle("won",p2dead&&!p1dead);
+ p2card.classList.toggle("won",p1dead&&!p2dead);
+ p1status.textContent=p1dead?"DEAD":(p2dead?"WON":"ALIVE");
+ p2status.textContent=p2dead?"DEAD":(p1dead?"WON":"ALIVE");
+}
+
+function changeBet(n){s.bet=Math.max(0,s.bet+n);save()}
+
+function win(player){
+ if(s.p1<=0||s.p2<=0)return;
+ const bet=s.bet;
+ if(player===1){
+   s.p2=Math.max(0,s.p2-bet);
+   s.p1+=bet;
+ }else{
+   s.p1=Math.max(0,s.p1-bet);
+   s.p2+=bet;
+ }
+ s.bet+=1;
+ save();
+}
+
+function newRound(){
+ s.p1=10;s.p2=10;s.bet+=1;save();
+}
+
+function draw(){
+ if(s.p1<=0||s.p2<=0)return;
+ s.bet+=1;
+ save();
+}
+
+function resetGame(){s={...DEFAULT};save()}
+let wakeLock = null;
+
+async function keepScreenAwake(){
+  if(!("wakeLock" in navigator)) return;
+  try{
+    wakeLock = await navigator.wakeLock.request("screen");
+  }catch(e){}
+}
+
+document.addEventListener("visibilitychange", ()=>{
+  if(document.visibilityState === "visible") keepScreenAwake();
+});
+
+window.addEventListener("load", keepScreenAwake);
+
+render();
+</script>
+</body>
+</html>
