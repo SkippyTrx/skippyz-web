@@ -37,7 +37,7 @@ body {
   position: fixed;
   left: 50%;
   bottom: 0;
-  width: min(64vw, 52vh, 520px);
+  width: min(52vw, 42vh, 440px);
   max-width: calc(100vw - 24px);
   max-height: calc(100vh - 24px);
   object-fit: contain;
