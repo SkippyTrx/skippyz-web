@@ -34,13 +34,14 @@ body {
 }
 
 .cat-foreground {
-  position: absolute;
+  position: fixed;
   left: 50%;
   bottom: 0;
-  width: min(48vw, 560px);
-  max-height: 82vh;
+  width: min(64vw, 52vh, 520px);
+  max-width: calc(100vw - 24px);
+  max-height: calc(100vh - 24px);
   object-fit: contain;
-  transform: translateX(-50%) rotate(-2deg);
+  transform: translateX(-50%);
   mix-blend-mode: screen;
   filter: grayscale(1) contrast(1.28) brightness(1.12);
   opacity: 0.92;
@@ -74,12 +75,8 @@ body {
 }
 
 @media (max-width: 700px) {
-  .logo-container {
-    --cat-height: min(72vw, 460px, 82vh);
-  }
-
   .cat-foreground {
-    width: min(72vw, 460px);
+    width: min(72vw, 52vh, 440px);
   }
 }
 
