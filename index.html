@@ -24,31 +24,15 @@
     <!-- LOGO -->
     <div class="logo-container">
 
+    <template id="skippy-trace-source">
     <svg
         id="skippy-svg"
+      hidden
         viewBox="350 220 1200 520"
         xmlns="http://www.w3.org/2000/svg"
     >
-        <defs>
-            <filter id="jitter" x="-30%" y="-30%" width="160%" height="160%">
-                <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="5" result="noise">
-                    <animate attributeName="baseFrequency" values="0.03;0.08;0.04;0.07" dur="0.16s" repeatCount="indefinite" />
-                </feTurbulence>
-                <feDisplacementMap in="SourceGraphic" in2="noise" scale="10" xChannelSelector="R" yChannelSelector="G">
-                    <animate attributeName="scale" values="6;14;8;16;12" dur="0.16s" repeatCount="indefinite" />
-                </feDisplacementMap>
-            </filter>
-        </defs>
-
-        <!-- LEFT START -->
-        <circle class="start-dot left-dot" cx="425" cy="582" r="3" />
-
-        <!-- RIGHT START -->
-        <circle class="start-dot right-dot" cx="1400" cy="666" r="3" />
-
-        <!-- S -->
         <path
-        class="letter draw-left"
+        class="letter"
         d="
         M425 582
         L446 567
@@ -104,9 +88,8 @@
         "
         />
 
-        <!-- K -->
         <path
-        class="letter draw-left"
+        class="letter"
         d="
         M671 589
         L698 571
@@ -158,9 +141,8 @@
         "
         />
 
-        <!-- I -->
         <path
-        class="letter draw-left"
+        class="letter"
         d="
         M800 587
         L826 571
@@ -193,9 +175,8 @@
         "
         />
 
-        <!-- I DOT -->
         <path
-        class="letter draw-left"
+        class="letter"
         d="
         M796 338
         L814 317
@@ -209,9 +190,8 @@
         "
         />
 
-        <!-- FIRST P OUTER -->
         <path
-        class="letter draw-center"
+        class="letter"
         d="
         M915 659
         L928 659
@@ -252,9 +232,8 @@
         "
         />
 
-        <!-- FIRST P INNER -->
         <path
-        class="letter draw-center"
+        class="letter"
         d="
         M939 531
         L937 421
@@ -271,9 +250,8 @@
         "
         />
 
-        <!-- SECOND P OUTER -->
         <path
-        class="letter draw-right"
+        class="letter"
         d="
         M1151 659
         L1164 659
@@ -314,9 +292,8 @@
         "
         />
 
-        <!-- SECOND P INNER -->
         <path
-        class="letter draw-right"
+        class="letter"
         d="
         M1175 531
         L1173 421
@@ -333,9 +310,8 @@
         "
         />
 
-        <!-- Y -->
         <path
-        class="letter draw-right"
+        class="letter"
         d="
         M1400 666
         L1435 642
@@ -395,6 +371,14 @@
         />
 
     </svg>
+    </template>
+
+    <img
+      class="cat-foreground"
+      src="./cat.jpg"
+      alt=""
+      aria-hidden="true"
+    />
 
     </div>
 
